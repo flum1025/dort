@@ -40,8 +40,8 @@ example
 ### Change socket
 If you need to connect to other server or another location socket, you can set access point via DOCKER_URL variables. For example:
 
-  DOCKER_URL=unix:///var/docker.sock dort
-  DOCKER_URL=tcp://example.com:1000 dort
+    $ DOCKER_URL=unix:///var/docker.sock dort
+    $ DOCKER_URL=tcp://example.com:1000 dort
 
 ## Contributing
 
