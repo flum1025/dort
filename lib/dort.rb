@@ -1,7 +1,6 @@
-#require "dort/version"
-require 'systemu'
+require "dort/version"
 require 'json'
-require 'docker' #TODO
+require 'docker'
 
 module Dort
   class Container
@@ -16,6 +15,16 @@ module Dort
           end
         end
       end
+
+      def to_s
+        binds.map do |k,v|
+          "#{v.join(",")}=>#{k}"
+        end.join(", ")
+      end
+
+      def host
+        binds.values
+      end
     end
 
     class Expose
@@ -23,18 +32,24 @@ module Dort
       def initialize(exposed_ports)
         @ports = exposed_ports.map{|port,_|port}
       end
+
+      def to_s
+        ports.join(", ")
+      end
     end
 
-    attr_reader :data, :bind_ports, :expose
+    attr_reader :id, :name, :data, :ports, :expose
 
     def initialize(data)
       @data = data
-      @bind_ports = Ports.new @data['HostConfig']['PortBindings']
+      @id = @data['Id'][0..11]
+      @name = @data['Name']
+      @ports = Ports.new @data['HostConfig']['PortBindings']
       @expose = Expose.new @data['Config']['ExposedPorts']
     end
 
     def to_s
-      "#<#{self.class}:#{object_id} Id=#{@data['Id'][0..11]} Name=#{@data['Name']}>"
+      "#<#{self.class}:#{object_id} Id=#{id} Name=#{name}>"
     end
     alias inspect to_s
   end
@@ -43,20 +58,8 @@ module Dort
   module_function
 
   def containers
-    #exec!('docker inspect $(docker ps -aq)')
-    exec!("#{bin} inspect $(#{bin} ps -aq)")
-  end
-
-  def exec!(*args)
-    status, stdout, stderr = systemu(*args)
-    raise ExcutionError, stderr unless status.exitstatus.zero?
-    info = JSON.parse(stdout)
-    info.map{|d| Container.new(d)}
-  end
-
-  def bin
-    ENV['DOCKER'] || `which docker`.chomp
+    Docker::Container.all(all: true).map do |container|
+      Container.new(container.json)
+    end
   end
 end
-
-p Dort.containers.first.bind_ports

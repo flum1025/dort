@@ -1,0 +1,59 @@
+if $0 == __FILE__
+  $:.unshift File.expand_path('../../lib', __FILE__)
+end
+
+require 'optparse'
+require 'dort'
+
+HEADER = Hash.new{|h,k|h[k] = k.upcase}
+HEADER[:id] = "CONTAINER_ID"
+
+class Hash
+  def slice(*args)
+    select{|key| args.include? key }
+  end
+end
+
+def format(header, data)
+  space = data.unshift(header).flatten.max_by(&:size).size
+  data.map do |row|
+    case row
+    when Array
+      row.map{|e|"#{e}#{" " * (space - e.size)}"}.join(" "*2)
+    when String
+      row
+    end
+  end.join("\n")
+end
+
+def show(options)
+  row = Dort.containers.map{|c|options.values.map{|block|block.call(c)}}
+  header = options.keys.map{|k|HEADER[k]}
+  puts format(header, row)
+end
+
+opt = OptionParser.new
+opt.version = Dort::VERSION
+opt.program_name = 'dort'
+options = {}
+opt.on('-p', '--port', 'show publish ports only'){|v|options[:port] = v}
+opt.on('-e', '--expose', 'show expose ports only'){|v|options[:expose] = v}
+opt.on('-l', '--list', 'list host port used by container'){|v|options[:host] = v}
+opt.parse!(ARGV)
+
+default = {
+  id: lambda(&:id),
+  name: lambda(&:name),
+  ports: lambda{|c|c.ports.to_s},
+  expose: lambda{|c|c.expose.to_s}
+}
+
+if options[:port]
+  show(default.slice(:id, :name, :ports))
+elsif options[:expose]
+  show(default.slice(:id, :name, :expose))
+elsif options[:host]
+  puts format(%w(HOST_PORTS), Dort.containers.map{|c|c.ports.host}.flatten.sort)
+else
+  show(default.slice(:id, :name, :ports, :expose))
+end
