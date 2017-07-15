@@ -44,8 +44,8 @@ module Dort
       @data = data
       @id = @data['Id'][0..11]
       @name = @data['Name']
-      @ports = Ports.new @data['HostConfig']['PortBindings']
-      @expose = Expose.new @data['Config']['ExposedPorts']
+      @ports = Ports.new @data['HostConfig']['PortBindings'] || []
+      @expose = Expose.new @data['Config']['ExposedPorts'] || []
     end
 
     def to_s
