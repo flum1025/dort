@@ -53,7 +53,7 @@ if options[:port]
 elsif options[:expose]
   show(default.slice(:id, :name, :expose))
 elsif options[:host]
-  puts format(%w(HOST_PORTS), Dort.containers.map{|c|c.ports.host}.flatten.sort)
+  puts format(%w(HOST_PORTS), Dort.containers.map{|c|c.ports.host}.flatten.sort_by(&:to_i))
 else
   show(default.slice(:id, :name, :ports, :expose))
 end
