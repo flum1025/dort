@@ -13,6 +13,29 @@ List port used by container
 and help
 
     $ dort -h
+    Usage: dort [options]
+        -p, --port                       show publish ports only
+        -e, --expose                     show expose ports only
+        -l, --list                       list host port used by container
+
+example
+
+    $ dort -l
+    HOST_PORTS
+    80
+    443
+    3306
+    5000
+    5432
+    6080
+    6379
+    8080
+    8023
+    10001
+    10002
+    10003
+    10004
+    10005
 
 ### Change socket
 If you need to connect to other server or another location socket, you can set access point via DOCKER_URL variables. For example:
