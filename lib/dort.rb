@@ -54,9 +54,7 @@ module Dort
     alias inspect to_s
   end
 
-  ExcutionError = Class.new(StandardError)
   module_function
-
   def containers
     Docker::Container.all(all: true).map do |container|
       Container.new(container.json)
